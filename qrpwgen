@@ -7,9 +7,12 @@ qr_level='H'
 pwgen_args='-s -n -c -1'
 #default output filename
 outfile_default="passwd"
+#default description
+description_default="Password"
 
 #first argument: the Description
-description=$1
+description=${1:-$description_default}
+
 #second optional argument: the output filename
 pdf_file="${2:-$outfile_default}.pdf"
 
