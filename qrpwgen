@@ -1,0 +1,41 @@
+#!/bin/sh
+#leght of the password
+pw_len=32
+#correction level of the qr code
+qr_level='H'
+#Arguments for pwgen
+pwgen_args='-s -n -c -1'
+#default output filename
+outfile_default="passwd"
+
+#first argument: the Description
+description=$1
+#second optional argument: the output filename
+pdf_file="${2:-$outfile_default}.pdf"
+
+old_umask=$(umask)
+umask 077
+
+new_pw=$(pwgen $pwgen_args $pw_len 1)
+
+echo "passwd:$new_pw"
+
+qr_file=$(mktemp --tmpdir XXXXXX.svg)
+
+qrencode -o "$qr_file" -l $qr_level -s 10 -t PNG "$description"
+
+pd_file=$(mktemp --tmpdir XXXXXX.pd)
+
+cat >"$pd_file" <<EOF
+# Password with description: "$description"
+
+$new_pw
+
+![$description,$new_pw]($qr_file)
+EOF
+
+pandoc -f markdown -t latex -o $pdf_file $pd_file
+
+rm $qr_file
+rm $pd_file
+umask $old_umask
